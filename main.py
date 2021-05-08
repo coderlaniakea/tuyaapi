@@ -1,5 +1,17 @@
+import hmac
+from hashlib import sha256
 
-def get_token(access_id, secret, t, exe_path):
+
+def get_sign(key, msg):
+    key = key.encode('utf-8')
+    msg = msg.encode('utf-8')
+    return hmac.new(key, msg, digestmod=sha256).hexdigest().upper()
+
+
+
+
+
+def get_token(access_id, secret, t):
     """
         token接口：sign = HMAC-SHA256(client_id + t, secret).toUpperCase() 
         非token接口：sign = HMAC-SHA256(client_id + access_token + t, secret).toUpperCase()
@@ -7,11 +19,7 @@ def get_token(access_id, secret, t, exe_path):
  
     link_str = access_id + t
 
-    os.chdir(exe_path)
-    command = r'ConsoleApp1.exe {} {}'.format(link_str, secret)
-    
-    res = os.popen(command)
-    sign = res.read().replace('\n', '')
+    sign = get_sign(secret, link_str)
 
     endpoint = r'https://openapi.tuyaus.com'
     headers = {
@@ -52,18 +60,13 @@ if __name__ == '__main__':
     device_id = '4834120498f4abfcc35a'
 
     t = str(round(time.time() * 1000))
-    exe_path = os.path.join(os.getcwd(), 'exe')
 
-    token = get_token(access_id, secret, t, exe_path)
+    token = get_token(access_id, secret, t)
 
 
     link_str = access_id + token + t
 
-    os.chdir(exe_path)
-    command = r'ConsoleApp1.exe {} {}'.format(link_str, secret)
-    
-    res = os.popen(command)
-    sign = res.read().replace('\n', '')
+    sign = get_sign(secret, link_str)
 
 
     endpoint = r'https://openapi.tuyaus.com'
