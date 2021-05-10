@@ -32,6 +32,9 @@ score2rank = {
     # 0: 5
 }
 
+# score为0的人数
+score0count = 0
+
 def register_user(user_id):
     if user_id in users.keys():
         print('该用户已注册.')
@@ -68,42 +71,36 @@ def add_score(score):
                     1.2如果score2rank不存在new_score，那么新增new_score，并且值为
                         score2rank更新前小于且最接近new_score的值
                 
-                2.当分数不为0时，获取分数处于pre_score的人数，用小于且最接近pre_score的
-                    分数排名减去pre_score的排名
-                    如果人数=1，则删除score2rank中的pre_score键
+                2.若分数为pre_score的仅有一人，加分之后pre_score就无人，此实需要删除pre_score
+                    2.1当分数不为0时，获取分数处于pre_score的人数，用小于且最接近pre_score的
+                        分数排名减去pre_score的排名
+                        如果人数=1，则删除score2rank中的pre_score键
+                    2.2分数为0的情况不讨论，因为无论如何score2rank中必须含有分数为0的排名
 
                 3.pre_score和 new_score 之间的所有分数排名要 + 1（含下区间不含上区间）
             """
             
             
-
-            # 2.
+            # 1.
             if new_score not in score2rank.keys():
                 # 获取score2rank更新前小于且最接近new_score的值
                 new_expect_val = get_expect_val(new_score)
-                # i = 0
-                # while True:
-                #     if (new_score - i) in score2rank.keys():
-                #         expect_val = score2rank[new_score - i]
-                #         break
-                #     i += 1
                 
                 # 新增new_score
                 score2rank[new_score] = new_expect_val
                 pass
 
-            # 1.
+            # 2.
             if pre_score != 0:
                 pre_expect_val = get_expect_val(pre_score)
                 pre_score_count = pre_expect_val - score2rank[pre_score]
                 if pre_score_count == 1:
                     del score2rank[pre_score]
-
-
+            
             # 3.
             for k,v in score2rank.items():
                 if k >= pre_score and k < new_score:
-                    score2rank[k] += score
+                    score2rank[k] += 1
             
             func(user_id)
         return make_decator
@@ -159,7 +156,7 @@ if __name__ == '__main__':
     show_now()
     # {
     #     2: 1,
-    #     0: 3 / 4
+    #     0: 3
     # }
 
     comment('id1')
@@ -179,13 +176,28 @@ if __name__ == '__main__':
     #     0: 4
     # }
 
-
-    # show_now()
-    
-    
+    login('id3')
+    show_now()
     # {
     #     4: 1,
-    #     3: 2,
     #     2: 3,
     #     0: 4
+    # }
+
+    share('id2')
+    show_now()
+    # {
+    #     5: 1,
+    #     4: 2,
+    #     0: 4
+    # }
+
+    register_user('id4')
+    login('id4')
+    show_now()
+    # {
+    #     5: 1,
+    #     4: 2,
+    #     1: 4,
+    #     0: 5
     # }
